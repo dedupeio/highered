@@ -14,7 +14,6 @@ setup(
     version='0.1',
     description='Learnable Edit Distance Using PyHacrf',
     packages=['highered'],
-   dependency_links = ['http://github.com/datamade/pyhacrf/tarball/master#egg=pyhacrf'],
     install_requires=['numpy', 'pyhacrf'],
     license='The MIT License: http://www.opensource.org/licenses/mit-license.php',
     classifiers=[
