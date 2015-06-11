@@ -14,7 +14,7 @@ setup(
     version='0.1',
     description='Learnable Edit Distance Using PyHacrf',
     packages=['highered'],
-    install_requires=['numpy', 'pyhacrf'],
+    install_requires=['numpy', 'pyhacrf>=0.7'],
     license='The MIT License: http://www.opensource.org/licenses/mit-license.php',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
