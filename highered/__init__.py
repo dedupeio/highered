@@ -1,13 +1,39 @@
 import pyhacrf
 from pyhacrf import Hacrf, StringPairFeatureExtractor
+from pyhacrf.state_machine import DefaultStateMachine
 
-import numpy
+import numpy as np
+
+class WiderStateMachine(DefaultStateMachine) :
+    BASE_LENGTH = 90
+
+    def _lattice_ends(self) :
+        lattice_limits = {}
+
+        lengths = np.arange(self.BASE_LENGTH)
+        lengths.reshape(1, -1)
+
+        I = self._base_lattice[..., 3:4] < lengths
+        for i in range(self.BASE_LENGTH) :
+            lattice_limits[i, None] = I[..., i].nonzero()[0]
+
+        J = self._base_lattice[..., 4:5] < lengths
+
+        IJ = np.expand_dims(I, axis=0).T & J
+
+        for i in range(self.BASE_LENGTH) :
+            for j in range(self.BASE_LENGTH) :
+                if i <= j :
+                    lattice_limits[i,j] = IJ[i, ..., j].nonzero()[0]
+
+        return lattice_limits
+
 
 
 class CRFEditDistance(object) :
     def __init__(self) :
         self.model = Hacrf(l2_regularization=1.0)
-        self.model.parameters = numpy.array(
+        self.model.parameters = np.array(
             [[ 0.95778803,  1.12747085,  0.0107147 ],
              [-0.03295845,  2.14652662, -0.21984459],
              [ 0.28332966, -0.03945445,  0.14360488],
@@ -18,8 +44,7 @@ class CRFEditDistance(object) :
              [ 0.15113431,  0.8799614,  -0.52835432]])
         self.model.classes = ['match', 'non-match']
 
-        self.model._state_machine =\
-            pyhacrf.pyhacrf.DefaultStateMachine(self.model.classes)
+        self.model._state_machine = WiderStateMachine(self.model.classes)
 
         self.feature_extractor = StringPairFeatureExtractor(match=True,
                                                             numeric=True)
@@ -36,7 +61,7 @@ class CRFEditDistance(object) :
 
     def __call__(self, string_1, string_2) :
         if not string_1 or not string_2 :
-            return numpy.nan
+            return np.nan
         if len(string_1) > len(string_2) :
             string_1, string_2 = string_2, string_1
         features = self.feature_extractor.fit_transform(((string_1, string_2),))

@@ -37,8 +37,8 @@ for entity_id in random.sample(names.keys(), POSITIVE_SAMPLE/2) :
 for entity_id in random.sample(addresses.keys(), POSITIVE_SAMPLE/2) :
     positive_examples.append(addresses[entity_id][:2])
 
-negative_examples = zip(names_1, all_names)[:POSITIVE_SAMPLE/2]
-negative_examples += zip(addresses_1, all_addresses)[:POSITIVE_SAMPLE/2]
+negative_examples = zip(names_1, all_names)[:POSITIVE_SAMPLE]
+negative_examples += zip(addresses_1, all_addresses)[:POSITIVE_SAMPLE]
 
 ed = highered.CRFEditDistance()
 
@@ -50,11 +50,8 @@ print(ed('bar', 'foo'))
 print(ed('foo1', 'bar'))
 print(ed('bar', 'foo1'))
 
-import pdb
-pdb.set_trace()
-
 X = positive_examples + negative_examples
-Y = ['match'] * POSITIVE_SAMPLE + ["distinct"] * POSITIVE_SAMPLE
+Y = ['match'] * POSITIVE_SAMPLE + ["non-match"] * POSITIVE_SAMPLE*2
 
 print X, Y
 

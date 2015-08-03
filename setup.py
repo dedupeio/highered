@@ -11,10 +11,12 @@ except ImportError :
 setup(
     name='highered',
     url='https://github.com/datamade/highered',
-    version='0.1',
+    version='0.1.2',
+    author='Forest Gregg',
+    author_email='fgregg@gmail.com',
     description='Learnable Edit Distance Using PyHacrf',
     packages=['highered'],
-    install_requires=['numpy', 'pyhacrf>=0.7'],
+    install_requires=['numpy', 'pyhacrf>=0.0.8'],
     license='The MIT License: http://www.opensource.org/licenses/mit-license.php',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
