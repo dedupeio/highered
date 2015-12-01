@@ -60,8 +60,6 @@ class CRFEditDistance(object) :
         self.model.fit(extracted_examples, labels, verbosity=1)
 
     def __call__(self, string_1, string_2) :
-        if not string_1 or not string_2 :
-            return np.nan
         if len(string_1) > len(string_2) :
             string_1, string_2 = string_2, string_1
         features = self.feature_extractor.fit_transform(((string_1, string_2),))
