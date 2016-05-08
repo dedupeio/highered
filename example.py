@@ -42,14 +42,6 @@ negative_examples += zip(addresses_1, all_addresses)[:POSITIVE_SAMPLE]
 
 ed = highered.CRFEditDistance()
 
-print(ed('a', 'b'))
-
-print(ed('foo', 'bar'))
-print(ed('bar', 'foo'))
-
-print(ed('foo1', 'bar'))
-print(ed('bar', 'foo1'))
-
 X = positive_examples + negative_examples
 Y = ['match'] * POSITIVE_SAMPLE + ["non-match"] * POSITIVE_SAMPLE*2
 

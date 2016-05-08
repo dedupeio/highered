@@ -1,53 +1,40 @@
 import pyhacrf
 from pyhacrf import Hacrf, StringPairFeatureExtractor
 from pyhacrf.state_machine import DefaultStateMachine
+from pyhacrf.adjacent import forward_predict
 
 import numpy as np
 
-class WiderStateMachine(DefaultStateMachine) :
-    BASE_LENGTH = 90
-
-    def _lattice_ends(self) :
-        lattice_limits = {}
-
-        lengths = np.arange(self.BASE_LENGTH)
-        lengths.reshape(1, -1)
-
-        I = self._base_lattice[..., 3:4] < lengths
-        for i in range(self.BASE_LENGTH) :
-            lattice_limits[i, None] = I[..., i].nonzero()[0]
-
-        J = self._base_lattice[..., 4:5] < lengths
-
-        IJ = np.expand_dims(I, axis=0).T & J
-
-        for i in range(self.BASE_LENGTH) :
-            for j in range(self.BASE_LENGTH) :
-                if i <= j :
-                    lattice_limits[i,j] = IJ[i, ..., j].nonzero()[0]
-
-        return lattice_limits
-
-
-
 class CRFEditDistance(object) :
     def __init__(self) :
-        self.model = Hacrf(l2_regularization=1.0)
+        classes = ['match', 'non-match']
+        self.model = Hacrf(l2_regularization=100.0,
+                           state_machine=DefaultStateMachine(classes))
         self.model.parameters = np.array(
-            [[-1.14087105,  2.41450373, -0.42000576],
-             [-0.0619002,   0.79430259,  0.33864121],
-             [-0.25353303,  1.69376742,  0.71731646],
-             [ 0.31544095,  1.47012227, -0.39960507],
-             [ 0.51356569, -0.67293917, -0.56861512],
-             [-0.57547361,  0.57599782,  0.3115221 ],
-             [ 0.55744877,  0.16423292, -0.64028285],
-             [-0.61935669, -0.02237494,  0.49829992]])
+            [[-0.22937526,  0.51326066],
+             [ 0.01038001, -0.13348901],
+             [-0.03062821,  0.13769178],
+             [ 0.02024813, -0.01835538],
+             [ 0.09208272,  0.15466022],
+             [-0.08170265, -0.02484392],
+             [-0.01762858,  0.17504624],
+             [ 0.02800866, -0.04442708]],
+            order='F')
+        self.parameters = self.model.parameters.T
         self.model.classes = ['match', 'non-match']
 
-        self.model._state_machine = WiderStateMachine(self.model.classes)
-
         self.feature_extractor = StringPairFeatureExtractor(match=True,
-                                                            numeric=True)
+                                                            numeric=False)
+
+
+        
+    def fast_pair(self, x):
+        x_dot_parameters = np.matmul(x, self.parameters)
+
+        probs = forward_predict(x_dot_parameters, 2)
+
+        return probs
+
 
     def train(self, examples, labels) :
         examples = [(string_2, string_1) 
@@ -62,5 +49,7 @@ class CRFEditDistance(object) :
     def __call__(self, string_1, string_2) :
         if len(string_1) > len(string_2) :
             string_1, string_2 = string_2, string_1
-        features = self.feature_extractor.fit_transform(((string_1, string_2),))
-        return self.model.predict_proba(features)[0,1]
+        array1 = np.array(tuple(string_1)).reshape(-1, 1)
+        array2 = np.array(tuple(string_2)).reshape(1, -1)
+        features = self.feature_extractor._extract_features(array1, array2)
+        return self.fast_pair(features)[1]
