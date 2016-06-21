@@ -11,7 +11,7 @@ except ImportError :
 setup(
     name='highered',
     url='https://github.com/datamade/highered',
-    version='0.2.0',
+    version='0.2.1',
     author='Forest Gregg',
     author_email='fgregg@gmail.com',
     description='Learnable Edit Distance Using PyHacrf',
